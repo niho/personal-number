@@ -1,16 +1,16 @@
 module PersonalNumber.Swedish exposing
-    ( PersonalNumber
+    ( PersonalNumber, isPNR, isSAM
     , ValidationError(..)
     , fromString, toString, display
     , decoder, encode
     )
 
-{-| Parse Swedish personal numbers. Supports both ordinary "personnummer" and "sammordningsnummer".
+{-| Parse Swedish personal numbers. Supports both ordinary "personnummer" and "sammordningsnummer" assigned to foreign temporary visitors.
 
 
 # Definition
 
-@docs PersonalNumber
+@docs PersonalNumber, isPNR, isSAM
 
 
 # Errors
@@ -40,6 +40,30 @@ import String exposing (filter, join, length, slice, startsWith, trim)
 type PersonalNumber
     = PNR String
     | SAM String
+
+
+{-| Check if the personal number is a "personnummer".
+-}
+isPNR : PersonalNumber -> Bool
+isPNR personalNumber =
+    case personalNumber of
+        PNR _ ->
+            True
+
+        SAM _ ->
+            False
+
+
+{-| Check if the personal number is a "sammordningsnummer".
+-}
+isSAM : PersonalNumber -> Bool
+isSAM personalNumber =
+    case personalNumber of
+        PNR _ ->
+            False
+
+        SAM _ ->
+            True
 
 
 {-| If the parsing fails an error of this type is returned.
