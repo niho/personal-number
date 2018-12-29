@@ -48,6 +48,11 @@ suite =
                 \_ -> Expect.err (fromString "19921208-1280")
             , test "should not accept an empty value" <|
                 \_ -> Expect.err (fromString "")
+            , test "should accept a valid SAM (sammordningsnummer)" <|
+                \_ ->
+                    fromString "701063-1237"
+                        |> Result.map PersonalNumber.toString
+                        |> Expect.equal (Ok "197010631237")
             ]
         , describe "display"
             [ test "should encode as a string with dash" <|

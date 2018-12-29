@@ -10,7 +10,6 @@ module PersonalNumber.Swedish exposing
 
 import Json.Decode
 import Json.Encode
-import Parser exposing (Parser)
 import Regex
 import String exposing (filter, join, length, slice, startsWith, trim)
 import Time
@@ -18,12 +17,13 @@ import Time
 
 type PersonalNumber
     = PNR String
+    | SAM String
 
 
 type ValidationError
     = InvalidFormat
     | InvalidLength
-    | InvalidDate String
+    | InvalidDate
     | InvalidChecksum
 
 
@@ -86,6 +86,32 @@ verifyChecksum str =
             Err InvalidChecksum
 
 
+numberType : String -> Result ValidationError PersonalNumber
+numberType str =
+    let
+        year =
+            slice 0 4 str |> String.toInt |> Maybe.withDefault 0
+
+        month =
+            slice 4 6 str |> String.toInt |> Maybe.withDefault 0
+
+        day =
+            slice 6 8 str |> String.toInt |> Maybe.withDefault 0
+    in
+    if year >= 1900 && month >= 1 && month <= 12 then
+        if day >= 1 && day <= 31 then
+            Ok (PNR str)
+
+        else if day >= 61 && day <= 91 then
+            Ok (SAM str)
+
+        else
+            Err InvalidDate
+
+    else
+        Err InvalidDate
+
+
 fromString : String -> Result ValidationError PersonalNumber
 fromString str =
     let
@@ -113,7 +139,7 @@ fromString str =
             in
             checkFormat (date ++ digits)
                 |> Result.andThen verifyChecksum
-                |> Result.map PNR
+                |> Result.andThen numberType
 
         _ ->
             Err InvalidLength
@@ -123,6 +149,9 @@ toString : PersonalNumber -> String
 toString pnr =
     case pnr of
         PNR str ->
+            str
+
+        SAM str ->
             str
 
 
