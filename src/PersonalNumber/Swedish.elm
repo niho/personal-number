@@ -12,7 +12,6 @@ import Json.Decode
 import Json.Encode
 import Regex
 import String exposing (filter, join, length, slice, startsWith, trim)
-import Time
 
 
 type PersonalNumber
