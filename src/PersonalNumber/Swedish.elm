@@ -1,12 +1,33 @@
 module PersonalNumber.Swedish exposing
     ( PersonalNumber
     , ValidationError(..)
-    , decoder
-    , display
-    , encode
-    , fromString
-    , toString
+    , fromString, toString, display
+    , decoder, encode
     )
+
+{-| Parse Swedish personal numbers. Supports both ordinary "personnummer" and "sammordningsnummer".
+
+
+# Definition
+
+@docs PersonalNumber
+
+
+# Errors
+
+@docs ValidationError
+
+
+# Strings
+
+@docs fromString, toString, display
+
+
+# JSON
+
+@docs decoder, encode
+
+-}
 
 import Json.Decode
 import Json.Encode
@@ -14,11 +35,15 @@ import Regex
 import String exposing (filter, join, length, slice, startsWith, trim)
 
 
+{-| An opaque type representing a valid personal number.
+-}
 type PersonalNumber
     = PNR String
     | SAM String
 
 
+{-| If the parsing fails an error of this type is returned.
+-}
 type ValidationError
     = InvalidFormat
     | InvalidLength
@@ -111,6 +136,8 @@ numberType str =
         Err InvalidDate
 
 
+{-| Parse a string into a personal number.
+-}
 fromString : String -> Result ValidationError PersonalNumber
 fromString str =
     let
@@ -144,6 +171,8 @@ fromString str =
             Err InvalidLength
 
 
+{-| Converts a personal number to string representation in the long format that is commonly used for database storage (YYYYMMDDXXXX).
+-}
 toString : PersonalNumber -> String
 toString pnr =
     case pnr of
@@ -154,11 +183,15 @@ toString pnr =
             str
 
 
+{-| Encode a personal number into a JSON value.
+-}
 encode : PersonalNumber -> Json.Encode.Value
 encode pnr =
     Json.Encode.string (toString pnr)
 
 
+{-| Decode a personal number.
+-}
 decoder : Json.Decode.Decoder PersonalNumber
 decoder =
     let
@@ -173,6 +206,8 @@ decoder =
     Json.Decode.string |> Json.Decode.andThen decode
 
 
+{-| Format a personal number into a user readable string (YYYYMMDD-XXXX).
+-}
 display : PersonalNumber -> String
 display pnr =
     let
