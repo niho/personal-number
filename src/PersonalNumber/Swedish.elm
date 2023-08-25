@@ -83,12 +83,11 @@ format =
 
 checkFormat : String -> Result ValidationError String
 checkFormat str =
-    case Regex.contains format str of
-        False ->
-            Err InvalidFormat
+    if Regex.contains format str then
+        Ok str
 
-        True ->
-            Ok str
+    else
+        Err InvalidFormat
 
 
 verifyChecksum : String -> Result ValidationError String
@@ -126,12 +125,11 @@ verifyChecksum str =
                     )
                 |> List.foldl (+) 0
     in
-    case modBy 10 checksum == 0 of
-        True ->
-            Ok str
+    if modBy 10 checksum == 0 then
+        Ok str
 
-        False ->
-            Err InvalidChecksum
+    else
+        Err InvalidChecksum
 
 
 numberType : String -> Result ValidationError PersonalNumber
@@ -224,8 +222,8 @@ decoder =
                 Ok pnr ->
                     Json.Decode.succeed pnr
 
-                Err err ->
-                    Json.Decode.fail "Invalid personal number."
+                Err _ ->
+                    Json.Decode.fail <| "Invalid personal number."
     in
     Json.Decode.string |> Json.Decode.andThen decode
 
