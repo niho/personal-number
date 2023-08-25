@@ -187,13 +187,15 @@ validateChecksum str =
         Err InvalidChecksum
 
 
-{-| Converts a personal number to string representation in the long format that is commonly used for database storage (YYYYMMDDXXXX).
+{-| Converts a personal number to string representation in the long format that is commonly used for database storage (DDMMYYXXXCC).
 -}
 toString : PersonalNumber -> String
 toString (PersonalNumber str) =
     str
 
 
+{-| Parse a string into a personal number.
+-}
 fromString : String -> Result ValidationError PersonalNumber
 fromString str =
     let
