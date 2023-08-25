@@ -223,7 +223,7 @@ decoder =
                     Json.Decode.succeed pnr
 
                 Err _ ->
-                    Json.Decode.fail <| "Invalid personal number."
+                    Json.Decode.fail "Invalid personal number."
     in
     Json.Decode.string |> Json.Decode.andThen decode
 
