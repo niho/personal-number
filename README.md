@@ -6,6 +6,7 @@ A library for parsing personal numbers. The library is designed to be forgiving 
 
 - Swedish personal numbers (personnummer).
 - Swedish personal numbers for foreign visitors (sammordningsnummer).
+- Norwegian personal numbers (fødselsnummer).
 
 ## Example usage
 

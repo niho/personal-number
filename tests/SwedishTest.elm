@@ -1,11 +1,7 @@
 module SwedishTest exposing (suite)
 
-import Expect exposing (Expectation)
-import PersonalNumber.Swedish as PersonalNumber
-    exposing
-        ( PersonalNumber(..)
-        , fromString
-        )
+import Expect
+import PersonalNumber.Swedish as PersonalNumber exposing (fromString)
 import Test exposing (..)
 
 
