@@ -3,7 +3,6 @@ module PersonalNumber.UK exposing
     , fromString, toString, display
     , ValidationError(..)
     , decoder, encode
-    --, simpleError
     )
 
 {-| Parses UK National Insurance Numbers.
@@ -290,18 +289,6 @@ fromString str =
 
     else
         Err errors
-
-
-{-| Provide a simple catch-all error for invalid NI Numbers
-
-    simpleError
-        == "National Insurance Numbers should be in the format  QQ 12 34 56 A  or  QQ123456A. "
-        ++ " Some letters are not allowed in certain places."
-
--}
-simpleError : String
-simpleError =
-    "National Insurance Numbers must be in the format  QQ 12 34 56 A  or  QQ123456A.  Some letters are not allowed in certain places."
 
 
 {-| Decode a National Insurance Number.
