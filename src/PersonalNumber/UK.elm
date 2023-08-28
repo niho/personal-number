@@ -9,24 +9,28 @@ module PersonalNumber.UK exposing
 
 With apologies to the government website for using an example that they asked me NOT to use,
 
-    import PersonalNumber.UK as NI
+    import PersonalNumber.UK as NI exposing (ValidationError(..))
 
-    NI.fromString "AB123456C" |> Result.map NI.display == Ok "AB 12 34 56 C"
+    NI.fromString "AB123456C" |> Result.map NI.display
+        == Ok "AB 12 34 56 C"
 
-    NI.fromString "AB 12 34 56 C" |> Result.map NI.toString == Ok "AB123456C"
+    NI.fromString "AB 12 34 56 C" |> Result.map NI.toString
+        == Ok "AB123456C"
 
 The example they told me to use is deliberately invalid:
 
-    NI.fromString "QQ 12 34 56 C" == Err [ DisallowedPrefixLetter ]
+    NI.fromString "QQ 12 34 56 C"
+        == Err [ DisallowedPrefixLetter ]
 
 You can get multiple errors
 
-    NI.fromString "GB 123F4567 Z" == [ WrongLength, DoesNotHaveSixNumbersInTheMiddle, DisallowedPrefix, SuffixNotAtoD ]
+    NI.fromString "GB 123F4567 Z"
+        == Err [ WrongLength, DoesNotHaveSixNumbersInTheMiddle, DisallowedPrefix, SuffixNotAtoD ]
 
 but if you don't like lists of errors you can simply replace the error with `simpleError`:
 
     Result.mapError (always NI.simpleError) (NI.fromString "ABC1234567890QQ")
-        == OK
+        == Err
             ("National Insurance Numbers should be in the format  QQ 12 34 56 A  or  QQ123456A. "
                 ++ " Some letters are not allowed in certain places."
             )
@@ -118,14 +122,14 @@ type ValidationError
         , NI.DisallowedSecondLetterO
         , NI.SuffixNotAtoD
         ]
-        [ "National Insurance Numbers should start with two letters, like  QQ 12 34 56 C  or  QQ123456C."
-        , "National Insurance Numbers should have six digits in the middle, like QQ 12 34 56 C or QQ123456C."
-        , "National Insurance Numbers should end with a single letter A, B, C or D, like QQ 12 34 56 C or QQ123456C."
-        , "BG, GB, KN, NK, NT, TN and ZZ are not allowed at the start of National Insurance Numbers."
-        , "D, F, I, Q, U, and V are not allowed in the first two letters of National Insurance Numbers."
-        , "O is not allowed in the second letter of National Insurance Numbers."
-        , "The last letter of National Insurance Numbers can only be A, B, C or D."
-        ]
+        == [ "National Insurance Numbers should start with two letters, like  QQ 12 34 56 C  or  QQ123456C."
+           , "National Insurance Numbers should have six digits in the middle, like  QQ 12 34 56 C  or  QQ123456C."
+           , "National Insurance Numbers should end with a single letter A, B, C or D, like  QQ 12 34 56 C  or  QQ123456C."
+           , "BG, GB, KN, NK, NT, TN and ZZ are not allowed at the start of National Insurance Numbers."
+           , "D, F, I, Q, U, and V are not allowed in the first two letters of National Insurance Numbers."
+           , "O is not allowed in the second letter of National Insurance Numbers."
+           , "The last letter of National Insurance Numbers can only be A, B, C or D."
+           ]
 
 -}
 errorToString : ValidationError -> String
@@ -220,7 +224,7 @@ inThisList list a =
 {-| Parse a string into a National Insurance Number, listing all errors if there are any.
 It removes superfluous spaces and any punctuation, as the government recommends.
 
-    import PersonalNumber.UK as NI
+    import PersonalNumber.UK as NI exposing (ValidationError(..))
 
     NI.fromString "tt_12-34-56   b   "
         |> Result.map NI.display
