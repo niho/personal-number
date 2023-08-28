@@ -1,13 +1,12 @@
 module PersonalNumber.UK exposing
     ( NationalInsuranceNumber
     , fromString, toString, display
-    , ValidationError(..), errorToString, simpleError
+    , ValidationError(..)
     , decoder, encode
+    --, simpleError
     )
 
 {-| Parses UK National Insurance Numbers.
-
-With apologies to the government website for using an example that they asked me NOT to use,
 
     import PersonalNumber.UK as NI exposing (ValidationError(..))
 
@@ -17,7 +16,7 @@ With apologies to the government website for using an example that they asked me
     NI.fromString "AB 12 34 56 C" |> Result.map NI.toString
         == Ok "AB123456C"
 
-The example they told me to use is deliberately invalid:
+The government website explicitly asks us not to use the examples above, but the example they ask us to use is deliberately invalid:
 
     NI.fromString "QQ 12 34 56 C"
         == Err [ DisallowedPrefixLetter ]
@@ -27,15 +26,17 @@ You can get multiple errors
     NI.fromString "GB 123F4567 Z"
         == Err [ WrongLength, DoesNotHaveSixNumbersInTheMiddle, DisallowedPrefix, SuffixNotAtoD ]
 
-but if you don't like lists of errors you can simply replace the error with `simpleError`:
+but you could simply replace the list of errors with a helpful message about what to do, just as `decoder` does:
 
-    Result.mapError (always NI.simpleError) (NI.fromString "ABC1234567890QQ")
-        == Err
-            ("National Insurance Numbers should be in the format  QQ 12 34 56 A  or  QQ123456A. "
-                ++ " Some letters are not allowed in certain places."
+    NI.fromString "ABC1234567890QQ"
+        |> Result.mapError
+            (always <|
+                "National Insurance Numbers should be in the format"
+                    ++ "  QQ 12 34 56 A  or  QQ123456A.  "
+                    ++ " Some letters are not allowed in certain places."
             )
 
-There are encoders and decoders for your JSON codec delight.
+There are JSON encoders and decoders.
 
 See <https://www.gov.uk/hmrc-internal-manuals/national-insurance-manual/nim39110> for specification,
 and see <https://design-system.service.gov.uk/patterns/national-insurance-numbers/> for designing your UI.
@@ -49,7 +50,7 @@ In particular:
       - avoid using ‘AB 12 34 56 C’ as an example because it belongs to a real person and use ‘QQ 12 34 56 C’ instead
       - set the spellcheck attribute to false so that browsers do not spellcheck the National Insurance Number
 
-I've done all but the last one for you in `fromString`.
+Everything except turning off spellchech is implemented in `fromString`.
 
 
 # Definition
@@ -64,7 +65,7 @@ I've done all but the last one for you in `fromString`.
 
 # Errors
 
-@docs ValidationError, errorToString, simpleError
+@docs ValidationError, errorToString
 
 
 # JSON
@@ -99,6 +100,35 @@ All prefixes are valid except:
   - The letter O is not used as the second letter of a prefix.
   - Prefixes BG, GB, KN, NK, NT, TN and ZZ are not to be used
 
+You could turn these errors into strings something like this:
+
+    errorToString : ValidationError -> String
+    errorToString e =
+        case e of
+            WrongLength ->
+                "National Insurance Numbers should have 9 characters, like  QQ 12 34 56 C  or  QQ123456C."
+
+            DoesNotStartWithTwoLetters ->
+                "National Insurance Numbers should start with two letters, like  QQ 12 34 56 C  or  QQ123456C."
+
+            DoesNotEndWithALetter ->
+                "National Insurance Numbers should end with a single letter A, B, C or D, like  QQ 12 34 56 C  or  QQ123456C."
+
+            DoesNotHaveSixNumbersInTheMiddle ->
+                "National Insurance Numbers should have six digits in the middle, like  QQ 12 34 56 C  or  QQ123456C."
+
+            DisallowedPrefixLetter ->
+                "D, F, I, Q, U, and V are not allowed in the first two letters of National Insurance Numbers."
+
+            DisallowedSecondLetterO ->
+                "O is not allowed in the second letter of National Insurance Numbers."
+
+            DisallowedPrefix ->
+                "BG, GB, KN, NK, NT, TN and ZZ are not allowed at the start of National Insurance Numbers."
+
+            SuffixNotAtoD ->
+                "The last letter of National Insurance Numbers can only be A, B, C or D."
+
 -}
 type ValidationError
     = WrongLength -- should be 9 if spaces are removed
@@ -109,55 +139,6 @@ type ValidationError
     | DisallowedPrefixLetter -- D, F, I, Q, U, V
     | DisallowedSecondLetterO
     | SuffixNotAtoD
-
-
-{-| Describing errors in a String.
-
-    List.map NI.errorToString
-        [ NI.DoesNotStartWithTwoLetters
-        , NI.DoesNotHaveSixNumbersInTheMiddle
-        , NI.DoesNotEndWithALetter
-        , NI.DisallowedPrefix
-        , NI.DisallowedPrefixLetter
-        , NI.DisallowedSecondLetterO
-        , NI.SuffixNotAtoD
-        ]
-        == [ "National Insurance Numbers should start with two letters, like  QQ 12 34 56 C  or  QQ123456C."
-           , "National Insurance Numbers should have six digits in the middle, like  QQ 12 34 56 C  or  QQ123456C."
-           , "National Insurance Numbers should end with a single letter A, B, C or D, like  QQ 12 34 56 C  or  QQ123456C."
-           , "BG, GB, KN, NK, NT, TN and ZZ are not allowed at the start of National Insurance Numbers."
-           , "D, F, I, Q, U, and V are not allowed in the first two letters of National Insurance Numbers."
-           , "O is not allowed in the second letter of National Insurance Numbers."
-           , "The last letter of National Insurance Numbers can only be A, B, C or D."
-           ]
-
--}
-errorToString : ValidationError -> String
-errorToString e =
-    case e of
-        WrongLength ->
-            "National Insurance Numbers should have 9 characters, like  QQ 12 34 56 C  or  QQ123456C."
-
-        DoesNotStartWithTwoLetters ->
-            "National Insurance Numbers should start with two letters, like  QQ 12 34 56 C  or  QQ123456C."
-
-        DoesNotEndWithALetter ->
-            "National Insurance Numbers should end with a single letter A, B, C or D, like  QQ 12 34 56 C  or  QQ123456C."
-
-        DoesNotHaveSixNumbersInTheMiddle ->
-            "National Insurance Numbers should have six digits in the middle, like  QQ 12 34 56 C  or  QQ123456C."
-
-        DisallowedPrefixLetter ->
-            "D, F, I, Q, U, and V are not allowed in the first two letters of National Insurance Numbers."
-
-        DisallowedSecondLetterO ->
-            "O is not allowed in the second letter of National Insurance Numbers."
-
-        DisallowedPrefix ->
-            "BG, GB, KN, NK, NT, TN and ZZ are not allowed at the start of National Insurance Numbers."
-
-        SuffixNotAtoD ->
-            "The last letter of National Insurance Numbers can only be A, B, C or D."
 
 
 {-| Converts a personal number to string representation in the short format that is commonly used for database storage (AB123456C).
@@ -320,7 +301,7 @@ fromString str =
 -}
 simpleError : String
 simpleError =
-    "National Insurance Numbers should be in the format  QQ 12 34 56 A  or  QQ123456A.  Some letters are not allowed in certain places."
+    "National Insurance Numbers must be in the format  QQ 12 34 56 A  or  QQ123456A.  Some letters are not allowed in certain places."
 
 
 {-| Decode a National Insurance Number.
@@ -334,7 +315,7 @@ decoder =
                     Json.Decode.succeed pnr
 
                 Err _ ->
-                    Json.Decode.fail simpleError
+                    Json.Decode.fail "National Insurance Numbers must be in the format  QQ 12 34 56 A  or  QQ123456A.  Some letters are not allowed in certain places."
     in
     Json.Decode.string |> Json.Decode.andThen decode
 
