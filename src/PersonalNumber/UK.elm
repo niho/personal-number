@@ -157,10 +157,10 @@ fromString str =
         wrongLength =
             ni
                 |> String.length
-                |> shouldBe ((==) 9) InvalidLength
+                |> shouldBe ((==) 9) [ InvalidLength ]
 
         startWithLetters =
-            prefix |> shouldBe (String.all Char.isAlpha) (InvalidFormat DoesNotStartWithTwoLetters)
+            prefix |> shouldBe (String.all Char.isAlpha) [ InvalidFormat DoesNotStartWithTwoLetters ]
 
         numbers =
             middleNumber
@@ -170,23 +170,23 @@ fromString str =
                             && String.length middleNumber
                             == 6
                     )
-                    (InvalidFormat DoesNotHaveSixNumbersInTheMiddle)
+                    [ InvalidFormat DoesNotHaveSixNumbersInTheMiddle ]
 
         badPrefixLetter =
             prefix
                 |> shouldBe (String.all <| not << inThisList [ 'D', 'F', 'I', 'Q', 'U', 'V' ])
-                    (InvalidPrefix DisallowedPrefixLetter)
+                    [ InvalidPrefix DisallowedPrefixLetter ]
 
         badSecondLetter =
             ni
                 |> String.slice 1 2
-                |> shouldNotBe ((==) "O") (InvalidPrefix DisallowedSecondLetterO)
+                |> shouldNotBe ((==) "O") [ InvalidPrefix DisallowedSecondLetterO ]
 
         disallowedPrefix =
             prefix
                 |> shouldNotBe
                     (inThisList [ "BG", "GB", "KN", "NK", "NT", "TN", "ZZ" ])
-                    (InvalidPrefix DisallowedPrefix)
+                    [ InvalidPrefix DisallowedPrefix ]
 
         badEnd =
             if not (String.all Char.isAlpha suffix) then
@@ -195,7 +195,7 @@ fromString str =
             else
                 suffix
                     |> shouldBe (String.all <| inThisList [ 'A', 'B', 'C', 'D' ])
-                        InvalidSuffix
+                        [ InvalidSuffix ]
 
         errors =
             List.concat [ wrongLength, startWithLetters, numbers, badPrefixLetter, badSecondLetter, disallowedPrefix, badEnd ]
@@ -235,16 +235,16 @@ encode pnr =
 -- Helpers
 
 
-shouldBe : (a -> Bool) -> error -> a -> List error
-shouldBe test error a =
+shouldBe : (a -> Bool) -> List error -> a -> List error
+shouldBe test errors a =
     if test a then
         []
 
     else
-        [ error ]
+        errors
 
 
-shouldNotBe : (a -> Bool) -> error -> a -> List error
+shouldNotBe : (a -> Bool) -> List error -> a -> List error
 shouldNotBe test error a =
     shouldBe (test >> not) error a
 
