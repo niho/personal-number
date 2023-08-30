@@ -3,7 +3,7 @@
     "name": "niho/personal-number",
     "summary": "A library for parsing personal numbers.",
     "license": "MIT",
-    "version": "1.2.0",
+    "version": "1.2.1",
     "exposed-modules": [
         "PersonalNumber.Swedish",
         "PersonalNumber.Norwegian",
